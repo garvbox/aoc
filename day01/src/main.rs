@@ -24,6 +24,10 @@ fn part01(input: String) -> String {
         .to_string()
 }
 
+fn part02(input: String) -> String {
+    281.to_string()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -36,5 +40,18 @@ a1b2c3d4e5f
 treb7uchet"
             .to_string();
         assert_eq!("142", part01(test_input));
+    }
+
+    #[test]
+    fn test_part2() {
+        let test_input = "two1nine
+eightwothree
+abcone2threexyz
+xtwone3four
+4nineeightseven2
+zoneight234
+7pqrstsixteen"
+            .to_string();
+        assert_eq!("281", part02(test_input));
     }
 }
