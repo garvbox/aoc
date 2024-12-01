@@ -1,4 +1,11 @@
 [workspace]
+resolver = "2"
+
 members = [
-    "day01",
+    "2023/day-*",
+    "2024/day-*",
+]
+default-members = [
+    "2023/day-*",
+    "2024/day-*",
 ]
