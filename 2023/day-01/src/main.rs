@@ -26,7 +26,7 @@ fn part01(input: &String) -> String {
         .to_string()
 }
 
-fn part02(input: &String) -> String {
+fn part02(_input: &String) -> String {
     281.to_string()
 }
 
