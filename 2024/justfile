@@ -11,4 +11,5 @@ bench day part:
 # create the directory for a new day's puzzle and fetch the input
 create day:
     cargo generate --path ./daily-template --name {{day}}
+    aoc download -d {{replace(day, 'day-', '')}} --input-only --input-file {{day}}/input.txt
 
