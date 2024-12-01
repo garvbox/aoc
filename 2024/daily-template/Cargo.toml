@@ -18,5 +18,5 @@ rstest_reuse.workspace = true
 
 [[bench]]
 name = "{{project-name}}-bench"
-path = "benches/bench-criterion.rs"
+path = "benches/benchmark.rs"
 harness = false

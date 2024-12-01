@@ -5,6 +5,8 @@ lint day:
     cargo clippy -p {{day}}
 test day part:
     cargo nextest run -p {{day}} {{part}}
+bench day part:
+    cargo bench --bench {{day}}-bench {{part}}
 
 # create the directory for a new day's puzzle and fetch the input
 create day:
