@@ -15,6 +15,7 @@ thiserror.workspace = true
 divan.workspace = true
 rstest.workspace = true
 rstest_reuse.workspace = true
+test-log.workspace = true
 
 [[bench]]
 name = "{{project-name}}-bench"

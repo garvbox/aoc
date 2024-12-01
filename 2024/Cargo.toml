@@ -12,3 +12,6 @@ rstest_reuse = "0.7.0"
 thiserror = "2.0.3"
 tracing = "0.1.41"
 tracing-subscriber = { version = "0.3.18", features = ["fmt", "env-filter"] }
+test-log = { version = "0.2.13", default-features = false, features = [
+    "trace",
+] }
