@@ -1,0 +1,22 @@
+[package]
+name = "{{project-name}}"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+tracing.workspace = true
+tracing-subscriber.workspace = true
+miette.workspace = true
+thiserror.workspace = true
+
+[dev-dependencies]
+divan.workspace = true
+rstest.workspace = true
+rstest_reuse.workspace = true
+
+[[bench]]
+name = "{{project-name}}-bench"
+path = "benches/bench-criterion.rs"
+harness = false

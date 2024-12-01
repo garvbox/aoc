@@ -1,9 +1,14 @@
 [workspace]
 resolver = "2"
 
-members = [
-    "day-*",
-]
-default-members = [
-    "day-*",
-]
+members = [ "day-*" ]
+default-members = [ "day-*" ]
+
+[workspace.dependencies]
+divan = "0.1.7"
+miette = { version = "7.4", features = ["fancy"] }
+rstest = "0.23.0"
+rstest_reuse = "0.7.0"
+thiserror = "2.0.3"
+tracing = "0.1.41"
+tracing-subscriber = { version = "0.3.18", features = ["fmt", "env-filter"] }
