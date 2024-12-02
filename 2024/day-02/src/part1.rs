@@ -31,12 +31,8 @@ pub fn process(input: &str) -> miette::Result<String> {
                 break;
             }
 
-            if is_increasing.is_none() {
-                is_increasing = Some(num > current_last_num);
-                tracing::trace!("Set is_increasing: {diff}");
-            }
-
-            if !is_increasing.unwrap() {
+            let increasing = is_increasing.get_or_insert(num > current_last_num);
+            if !*increasing {
                 tracing::trace!("Is decreasing - flipped diff: {diff}");
                 diff = -diff;
             }
