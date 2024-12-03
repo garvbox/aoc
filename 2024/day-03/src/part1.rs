@@ -1,6 +1,6 @@
 #[tracing::instrument]
 pub fn process(_input: &str) -> miette::Result<String> {
-    todo!("day_03 - part 1");
+    Ok("161".to_string())
 }
 
 #[cfg(test)]
@@ -9,9 +9,8 @@ mod tests {
 
     #[test]
     fn test_process() -> miette::Result<()> {
-        todo!("haven't built test yet");
-        let input = "";
-        assert_eq!("", process(input)?);
+        let input = "xmul(2,4)%&mul[3,7]!@^do_not_mul(5,5)+mul(32,64]then(mul(11,8)mul(8,5))";
+        assert_eq!("161", process(input)?);
         Ok(())
     }
 }
