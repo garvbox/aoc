@@ -1,57 +1,64 @@
-// #[tracing::instrument]
+const BOUNDS: std::ops::RangeInclusive<isize> = 1..=3;
+
 pub fn process(input: &str) -> miette::Result<String> {
-    let mut n = 0;
-    let bounds = 1..=3;
+    let n: usize = input
+        .lines()
+        .map(|line| {
+            tracing::trace!("Line: '{}'", line);
+            let nums: Vec<isize> = line
+                .split_whitespace()
+                .into_iter()
+                .map(|n| n.parse().unwrap())
+                .collect();
 
-    for line in input.lines() {
-        tracing::trace!("Line: '{}'", line);
-        let nums: Vec<isize> = line
-            .split_whitespace()
-            .into_iter()
-            .map(|n| n.parse().unwrap())
-            .collect();
-
-        let mut is_increasing: Option<bool> = None;
-        let mut last_num: Option<isize> = None;
-        let mut line_safe: bool = true;
-
-        for num in nums {
-            if last_num.is_none() {
-                last_num = Some(num);
-                continue;
+            if is_line_safe(nums) {
+                tracing::trace!("Line Safe");
+                1
+            } else {
+                0
             }
-
-            let current_last_num = last_num.unwrap();
-            let mut diff = num - current_last_num;
-            tracing::trace!("Num: {num}, Last Num: {current_last_num}, Diff: {diff}",);
-
-            if diff == 0 {
-                tracing::trace!("Zero diff - line unsafe");
-                line_safe = false;
-                break;
-            }
-
-            let increasing = is_increasing.get_or_insert(num > current_last_num);
-            if !*increasing {
-                tracing::trace!("Is decreasing - flipped diff: {diff}");
-                diff = -diff;
-            }
-
-            if !bounds.contains(&diff) {
-                tracing::trace!("Unsafe diff: {diff}");
-                line_safe = false;
-                break;
-            }
-
-            last_num = Some(num);
-        }
-        if line_safe {
-            tracing::trace!("Line Safe");
-            n += 1;
-        }
-    }
+        })
+        .sum();
 
     Ok(n.to_string())
+}
+
+pub fn is_line_safe(nums: Vec<isize>) -> bool {
+    let mut is_increasing: Option<bool> = None;
+    let mut last_num: Option<isize> = None;
+    let mut line_safe: bool = true;
+
+    for num in nums {
+        if last_num.is_none() {
+            last_num = Some(num);
+            continue;
+        }
+
+        let current_last_num = last_num.unwrap();
+        let mut diff = num - current_last_num;
+        tracing::trace!("Num: {num}, Last Num: {current_last_num}, Diff: {diff}",);
+
+        if diff == 0 {
+            tracing::trace!("Zero diff - line unsafe");
+            line_safe = false;
+            break;
+        }
+
+        let increasing = is_increasing.get_or_insert(num > current_last_num);
+        if !*increasing {
+            tracing::trace!("Is decreasing - flipped diff: {diff}");
+            diff = -diff;
+        }
+
+        if !BOUNDS.contains(&diff) {
+            tracing::trace!("Unsafe diff: {diff}");
+            line_safe = false;
+            break;
+        }
+
+        last_num = Some(num);
+    }
+    line_safe
 }
 
 #[cfg(test)]
@@ -77,3 +84,4 @@ mod tests {
         Ok(())
     }
 }
+
