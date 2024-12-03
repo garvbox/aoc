@@ -6,6 +6,7 @@ pub fn process(_input: &str) -> miette::Result<String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use test_log::test;
 
     #[test]
     fn test_process() -> miette::Result<()> {
