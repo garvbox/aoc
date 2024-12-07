@@ -10,8 +10,11 @@ bench-all:
 bench day part:
     cargo bench --bench {{day}}-bench {{part}} >> {{day}}.bench.txt
 
-# create the directory for a new day's puzzle and fetch the input
-create day:
+
+init day:
     cargo generate --path ./daily-template --name {{day}}
+download day:
     aoc download -d {{replace(day, 'day-', '')}} --input-only --input-file {{day}}/input.txt
+
+create day: (init day) (download day)
 
