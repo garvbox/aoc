@@ -1,18 +1,28 @@
+use std::collections::{HashMap, HashSet};
+
 use tracing::trace;
 
 pub fn process(input: &str) -> miette::Result<String> {
-    let rules: Vec<(usize, usize)> = input
-        .lines()
-        .by_ref()
-        .filter(|l| l.contains("|"))
-        .map(|line| {
-            let mut nums = line.split("|");
-            (
-                nums.next().unwrap().parse().unwrap(),
-                nums.next().unwrap().parse().unwrap(),
-            )
-        })
-        .collect();
+    // NOTE: Rules is a map of entries to collections of elements which should be to the left or
+    // right of that element for quick lookup
+    let mut rules: HashMap<usize, (HashSet<usize>, HashSet<usize>)> = HashMap::new();
+
+    for line in input.lines().filter(|l| l.contains("|")) {
+        let mut nums = line.split("|");
+        let left = nums.next().unwrap().parse().unwrap();
+        let right = nums.next().unwrap().parse().unwrap();
+        rules
+            .entry(left)
+            .or_insert((HashSet::new(), HashSet::new()))
+            .1
+            .insert(right);
+
+        rules
+            .entry(right)
+            .or_insert((HashSet::new(), HashSet::new()))
+            .0
+            .insert(left);
+    }
 
     let result: usize = input
         .lines()
@@ -25,37 +35,19 @@ pub fn process(input: &str) -> miette::Result<String> {
                 .map(|num| num.parse::<usize>().unwrap())
                 .collect();
 
-            let is_ordered = page_nums.iter().enumerate().all(|(page_index, page)| {
-                rules
+            let is_ordered =
+                page_nums
                     .iter()
-                    .filter(|rule| rule.0 == *page || rule.1 == *page)
-                    .all(|rule| {
-                        // Finding the position of the "other" element of the current rule set
-                        let other_position = page_nums.iter().position(|&pos| {
-                            if rule.0 == *page {
-                                rule.1 == pos
-                            } else {
-                                rule.0 == pos
-                            }
-                        });
-                        if other_position.is_none() {
-                            return true;
+                    .enumerate()
+                    .all(|(page_index, page)| match rules.get(page) {
+                        Some((lefts, rights)) => {
+                            page_nums[0..page_index].iter().all(|p| lefts.contains(p))
+                                && page_nums[page_index + 1..]
+                                    .iter()
+                                    .all(|p| rights.contains(p))
                         }
-                        trace!(
-                            "Page {}, Rule: {}|{}, other position {}",
-                            page,
-                            rule.0,
-                            rule.1,
-                            other_position.unwrap()
-                        );
-
-                        if rule.0 == *page {
-                            Some(page_index) < other_position
-                        } else {
-                            Some(page_index) > other_position
-                        }
-                    })
-            });
+                        _ => false,
+                    });
 
             if is_ordered {
                 let middle_num = page_nums[page_nums.len() / 2];
