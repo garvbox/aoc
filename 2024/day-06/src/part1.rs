@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use glam::UVec2;
 
 #[tracing::instrument(skip(input))]
@@ -33,7 +35,9 @@ pub fn process(input: &str) -> miette::Result<String> {
     tracing::trace!("Obstructions: {:?}", obstructions);
     tracing::debug!("Guard Initial Position: {:?}", guard);
 
-    let mut num_positions: u32 = 1;
+    let mut tracked_positions: HashSet<UVec2> = HashSet::new();
+    tracked_positions.insert(guard.position);
+
     while !is_exiting_bounds(&guard, &bounds) {
         let next_position = match guard.direction {
             GuardDirection::North => UVec2::new(guard.position.x, guard.position.y + 1),
@@ -45,7 +49,7 @@ pub fn process(input: &str) -> miette::Result<String> {
         if obstructions.contains(&next_position) {
             // Make no move if we are to hit an obstruction, do not count positions
             guard.direction = guard.direction.pivot();
-            tracing::debug!("Pivoted to {:?}", guard.direction);
+            tracing::debug!("Pivoted to {:?}", guard.direction,);
         } else {
             tracing::debug!(
                 "Moving Guard at {:?} to {:?}",
@@ -53,12 +57,12 @@ pub fn process(input: &str) -> miette::Result<String> {
                 next_position
             );
             guard.position = next_position;
-            num_positions += 1;
+            tracked_positions.insert(guard.position);
         }
     }
     tracing::debug!("Guard Final Position: {:?}", guard);
 
-    return Ok(num_positions.to_string());
+    return Ok(tracked_positions.len().to_string());
 }
 
 #[tracing::instrument]
