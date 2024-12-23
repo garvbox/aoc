@@ -2,7 +2,7 @@ use glam::UVec2;
 
 #[tracing::instrument(skip(input))]
 pub fn process(input: &str) -> miette::Result<String> {
-    let inputs: Vec<Entity> = input
+    let entities: Vec<Entity> = input
         .lines()
         .rev() // NOTE: Input is processed row by row in reverse so that X-Y coords make sense
         .skip_while(|line| line.is_empty())
@@ -10,9 +10,15 @@ pub fn process(input: &str) -> miette::Result<String> {
         .flat_map(|(row, line)| parse_row(row, line))
         .collect();
 
-    let mut guard: GuardLocation = GuardLocation::new(0, 0);
+    let bounds: UVec2 = match entities.last() {
+        Some(Entity::Obstruction(pos) | Entity::Guard(pos) | Entity::None(pos)) => {
+            UVec2::new(pos.x, pos.y)
+        }
+        _ => unreachable!("Something went horribly wrong here..."),
+    };
 
-    let obstructions: Vec<&UVec2> = inputs
+    let mut guard: GuardLocation = GuardLocation::new(0, 0);
+    let obstructions: Vec<&UVec2> = entities
         .iter()
         .filter_map(|i| match i {
             Entity::Obstruction(position) => Some(position),
@@ -20,6 +26,7 @@ pub fn process(input: &str) -> miette::Result<String> {
                 guard.position = position.clone();
                 None
             }
+            Entity::None(_) => None,
         })
         .collect();
 
@@ -35,13 +42,15 @@ fn parse_row(row: usize, input: &str) -> Vec<Entity> {
         .chars()
         .enumerate()
         .filter_map(|(column, ch)| {
-            let pos = (row as u32, column as u32);
-            match ch {
-                '#' => Some(Entity::Obstruction(UVec2::from(pos))),
-                '^' => Some(Entity::Guard(UVec2::from(pos))),
-                '.' => None,
+            let pos = UVec2::from((row as u32, column as u32));
+            let res = match ch {
+                '#' => Some(Entity::Obstruction(pos)),
+                '^' => Some(Entity::Guard(pos)),
+                '.' => Some(Entity::None(pos)),
                 _ => unreachable!("Parser missed possible input {:?}", input),
-            }
+            };
+            tracing::trace!("Found: {:?}", &res);
+            res
         })
         .collect()
 }
@@ -50,6 +59,7 @@ fn parse_row(row: usize, input: &str) -> Vec<Entity> {
 enum Entity {
     Obstruction(UVec2),
     Guard(UVec2),
+    None(UVec2),
 }
 
 #[derive(Default, Clone, Debug, PartialEq, Eq)]
@@ -115,7 +125,18 @@ mod tests {
     fn test_parse_empty_row() -> miette::Result<()> {
         let input = "..........";
         let expected: Vec<Entity> = vec![];
-        assert_eq!(expected, parse_row(0, input));
+        assert_eq!(
+            expected,
+            parse_row(0, input)
+                .into_iter()
+                .filter(|entity| {
+                    match entity {
+                        Entity::None(_) => false,
+                        _ => true,
+                    }
+                })
+                .collect::<Vec<Entity>>()
+        );
         Ok(())
     }
 
@@ -123,7 +144,18 @@ mod tests {
     fn test_parse_guard_position() -> miette::Result<()> {
         let input = "....^.....";
         let expected: Vec<Entity> = vec![Entity::Guard(UVec2::new(0, 4))];
-        assert_eq!(expected, parse_row(0, input));
+        assert_eq!(
+            expected,
+            parse_row(0, input)
+                .into_iter()
+                .filter(|entity| {
+                    match entity {
+                        Entity::None(_) => false,
+                        _ => true,
+                    }
+                })
+                .collect::<Vec<Entity>>()
+        );
         Ok(())
     }
 
@@ -131,7 +163,18 @@ mod tests {
     fn test_parse_guard_position_non_zero_row() -> miette::Result<()> {
         let input = "....^.....";
         let expected: Vec<Entity> = vec![Entity::Guard(UVec2::new(7, 4))];
-        assert_eq!(expected, parse_row(7, input));
+        assert_eq!(
+            expected,
+            parse_row(7, input)
+                .into_iter()
+                .filter(|entity| {
+                    match entity {
+                        Entity::None(_) => false,
+                        _ => true,
+                    }
+                })
+                .collect::<Vec<Entity>>()
+        );
         Ok(())
     }
 
@@ -142,7 +185,18 @@ mod tests {
             Entity::Guard(UVec2::new(0, 4)),
             Entity::Obstruction(UVec2::new(0, 8)),
         ];
-        assert_eq!(expected, parse_row(0, input));
+        assert_eq!(
+            expected,
+            parse_row(0, input)
+                .into_iter()
+                .filter(|entity| {
+                    match entity {
+                        Entity::None(_) => false,
+                        _ => true,
+                    }
+                })
+                .collect::<Vec<Entity>>()
+        );
         Ok(())
     }
 }
