@@ -10,26 +10,21 @@ pub fn process(input: &str) -> miette::Result<String> {
         .flat_map(|(row, line)| parse_row(row, line))
         .collect();
 
+    let mut guard: GuardLocation = GuardLocation::new(0, 0);
+
     let obstructions: Vec<&UVec2> = inputs
         .iter()
         .filter_map(|i| match i {
             Entity::Obstruction(position) => Some(position),
-            _ => None,
+            Entity::Guard(position) => {
+                guard.position = position.clone();
+                None
+            }
         })
         .collect();
 
-    let mut guard_position: GuardPosition = inputs
-        .iter()
-        .filter_map(|i| match i {
-            Entity::Guard(guard_position) => Some(guard_position),
-            _ => None,
-        })
-        .next()
-        .unwrap()
-        .clone();
-
     tracing::trace!("Obstructions: {:?}", obstructions);
-    tracing::trace!("Guard Position: {:?}", guard_position);
+    tracing::trace!("Guard Position: {:?}", guard);
 
     return Ok("".to_string());
 }
@@ -43,7 +38,7 @@ fn parse_row(row: usize, input: &str) -> Vec<Entity> {
             let pos = (row as u32, column as u32);
             match ch {
                 '#' => Some(Entity::Obstruction(UVec2::from(pos))),
-                '^' => Some(Entity::Guard(GuardPosition::new(pos.0, pos.1))),
+                '^' => Some(Entity::Guard(UVec2::from(pos))),
                 '.' => None,
                 _ => unreachable!("Parser missed possible input {:?}", input),
             }
@@ -54,18 +49,18 @@ fn parse_row(row: usize, input: &str) -> Vec<Entity> {
 #[derive(Eq, PartialEq, Clone, Debug)]
 enum Entity {
     Obstruction(UVec2),
-    Guard(GuardPosition),
+    Guard(UVec2),
 }
 
 #[derive(Default, Clone, Debug, PartialEq, Eq)]
-struct GuardPosition {
+struct GuardLocation {
     position: UVec2,
     direction: GuardDirection,
 }
 
-impl GuardPosition {
-    fn new(x: u32, y: u32) -> GuardPosition {
-        GuardPosition {
+impl GuardLocation {
+    fn new(x: u32, y: u32) -> GuardLocation {
+        GuardLocation {
             position: UVec2::from((x, y)),
             direction: GuardDirection::North,
         }
@@ -127,7 +122,7 @@ mod tests {
     #[test]
     fn test_parse_guard_position() -> miette::Result<()> {
         let input = "....^.....";
-        let expected: Vec<Entity> = vec![Entity::Guard(GuardPosition::new(0, 4))];
+        let expected: Vec<Entity> = vec![Entity::Guard(UVec2::new(0, 4))];
         assert_eq!(expected, parse_row(0, input));
         Ok(())
     }
@@ -135,7 +130,7 @@ mod tests {
     #[test]
     fn test_parse_guard_position_non_zero_row() -> miette::Result<()> {
         let input = "....^.....";
-        let expected: Vec<Entity> = vec![Entity::Guard(GuardPosition::new(7, 4))];
+        let expected: Vec<Entity> = vec![Entity::Guard(UVec2::new(7, 4))];
         assert_eq!(expected, parse_row(7, input));
         Ok(())
     }
@@ -144,7 +139,7 @@ mod tests {
     fn test_parse_guard_position_and_obstruction() -> miette::Result<()> {
         let input = "....^...#.";
         let expected: Vec<Entity> = vec![
-            Entity::Guard(GuardPosition::new(0, 4)),
+            Entity::Guard(UVec2::new(0, 4)),
             Entity::Obstruction(UVec2::new(0, 8)),
         ];
         assert_eq!(expected, parse_row(0, input));
