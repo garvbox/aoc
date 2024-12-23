@@ -37,6 +37,19 @@ pub fn process(input: &str) -> miette::Result<String> {
 }
 
 #[tracing::instrument]
+fn exiting_bounds(guard: &GuardLocation, bounds: &UVec2) -> bool {
+    tracing::trace!(
+        "Position: {:?}, Min element: {:?}",
+        guard.position,
+        guard.position.min_element()
+    );
+    (guard.position.min_element() == 0
+        && [GuardDirection::South, GuardDirection::West].contains(&guard.direction))
+        || (guard.position.x >= bounds.x - 1 && guard.direction == GuardDirection::East)
+        || (guard.position.y >= bounds.y && guard.direction == GuardDirection::North)
+}
+
+#[tracing::instrument]
 fn parse_row(row: usize, input: &str) -> Vec<Entity> {
     input
         .chars()
@@ -197,6 +210,16 @@ mod tests {
                 })
                 .collect::<Vec<Entity>>()
         );
+        Ok(())
+    }
+
+    #[test]
+    fn test_in_bounds_returns_false_when_zero_bounds_reached_and_direction_south(
+    ) -> miette::Result<()> {
+        let bounds = UVec2::new(5, 5);
+        let mut guard = GuardLocation::new(0, 1);
+        guard.direction = GuardDirection::South;
+        assert!(exiting_bounds(&guard, &bounds));
         Ok(())
     }
 }
