@@ -23,7 +23,7 @@ pub fn process(input: &str) -> miette::Result<String> {
         .filter_map(|i| match i {
             Entity::Obstruction(position) => Some(position),
             Entity::Guard(position) => {
-                guard.position = position.clone();
+                guard.position = *position;
                 None
             }
             Entity::None(_) => None,
