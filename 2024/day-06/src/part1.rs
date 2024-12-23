@@ -33,7 +33,32 @@ pub fn process(input: &str) -> miette::Result<String> {
     tracing::trace!("Obstructions: {:?}", obstructions);
     tracing::debug!("Guard Initial Position: {:?}", guard);
 
-    return Ok("".to_string());
+    let mut num_positions: u32 = 1;
+    while !is_exiting_bounds(&guard, &bounds) {
+        let next_position = match guard.direction {
+            GuardDirection::North => UVec2::new(guard.position.x, guard.position.y + 1),
+            GuardDirection::South => UVec2::new(guard.position.x, guard.position.y - 1),
+            GuardDirection::East => UVec2::new(guard.position.x + 1, guard.position.y),
+            GuardDirection::West => UVec2::new(guard.position.x - 1, guard.position.y),
+        };
+
+        if obstructions.contains(&next_position) {
+            // Make no move if we are to hit an obstruction, do not count positions
+            guard.direction = guard.direction.pivot();
+            tracing::debug!("Pivoted to {:?}", guard.direction);
+        } else {
+            tracing::debug!(
+                "Moving Guard at {:?} to {:?}",
+                guard.position,
+                next_position
+            );
+            guard.position = next_position;
+            num_positions += 1;
+        }
+    }
+    tracing::debug!("Guard Final Position: {:?}", guard);
+
+    return Ok(num_positions.to_string());
 }
 
 #[tracing::instrument]
@@ -99,6 +124,19 @@ enum GuardDirection {
     South,
     East,
     West,
+}
+
+impl GuardDirection {
+    #[tracing::instrument]
+    fn pivot(&self) -> Self {
+        use GuardDirection::*;
+        match *self {
+            North => East,
+            East => South,
+            South => West,
+            West => North,
+        }
+    }
 }
 
 #[cfg(test)]
