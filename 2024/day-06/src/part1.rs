@@ -73,6 +73,18 @@ mod tests {
     }
 
     #[test]
+    fn test_process_simple_single_exit() -> miette::Result<()> {
+        let input = "
+....#.....
+..........
+....^.....
+";
+        // Should move up 1 step and then 5 to the right then done
+        assert_eq!("6", process(input)?);
+        Ok(())
+    }
+
+    #[test]
     fn test_parse_empty_row() -> miette::Result<()> {
         let input = "..........";
         let expected: Vec<Entity> = vec![];
