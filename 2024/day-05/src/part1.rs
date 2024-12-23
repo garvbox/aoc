@@ -3,25 +3,15 @@ use std::collections::{HashMap, HashSet};
 use tracing::trace;
 
 pub fn process(input: &str) -> miette::Result<String> {
-    // NOTE: Rules is a map of entries to collections of elements which should be to the left or
-    // right of that element for quick lookup
-    let mut rules: HashMap<usize, (HashSet<usize>, HashSet<usize>)> = HashMap::new();
+    // NOTE: Rules is a map of entries to collections of elements which should be after that
+    // that element, allowing easy sorting
+    let mut rules: HashMap<usize, HashSet<usize>> = HashMap::new();
 
     for line in input.lines().filter(|l| l.contains("|")) {
         let mut nums = line.split("|");
         let left = nums.next().unwrap().parse().unwrap();
         let right = nums.next().unwrap().parse().unwrap();
-        rules
-            .entry(left)
-            .or_insert((HashSet::new(), HashSet::new()))
-            .1
-            .insert(right);
-
-        rules
-            .entry(right)
-            .or_insert((HashSet::new(), HashSet::new()))
-            .0
-            .insert(left);
+        rules.entry(left).or_default().insert(right);
     }
 
     let updates: Vec<Vec<usize>> = input
@@ -37,26 +27,13 @@ pub fn process(input: &str) -> miette::Result<String> {
 
     let result: usize = updates
         .iter()
+        .filter(|update| {
+            update.is_sorted_by(|a, b| rules.get(a).is_some_and(|pages| pages.contains(b)))
+        })
         .map(|update| {
-            let is_ordered =
-                update
-                    .iter()
-                    .enumerate()
-                    .all(|(page_index, page)| match rules.get(page) {
-                        Some((lefts, rights)) => {
-                            update[0..page_index].iter().all(|p| lefts.contains(p))
-                                && update[page_index + 1..].iter().all(|p| rights.contains(p))
-                        }
-                        _ => false,
-                    });
-
-            if is_ordered {
-                let middle_num = update[update.len() / 2];
-                trace!("Found result: {middle_num}");
-                middle_num
-            } else {
-                0
-            }
+            let middle_num = update[update.len() / 2];
+            trace!("Found result: {middle_num}");
+            middle_num
         })
         .sum();
 
