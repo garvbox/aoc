@@ -21,7 +21,7 @@ pub fn process(input: &str) -> miette::Result<String> {
     let obstructions: Vec<UVec2> = entities
         .iter()
         .filter_map(|i| match i {
-            Entity::Obstruction(position) => Some(position.clone()),
+            Entity::Obstruction(position) => Some(*position),
             Entity::Guard(position) => {
                 guard.position = *position;
                 None
@@ -31,7 +31,7 @@ pub fn process(input: &str) -> miette::Result<String> {
         .collect();
 
     tracing::trace!("Obstructions: {:?}", obstructions);
-    tracing::trace!("Guard Position: {:?}", guard);
+    tracing::debug!("Guard Initial Position: {:?}", guard);
 
     return Ok("".to_string());
 }
