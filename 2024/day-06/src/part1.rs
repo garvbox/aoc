@@ -2,6 +2,38 @@ use glam::UVec2;
 
 #[tracing::instrument(skip(input))]
 pub fn process(input: &str) -> miette::Result<String> {
+    let inputs: Vec<Entity> = input
+        .lines()
+        .rev() // NOTE: Input is processed row by row in reverse so that X-Y coords make sense
+        .skip_while(|line| line.is_empty())
+        .enumerate()
+        .flat_map(|(row, line)| parse_row(row, line))
+        .collect();
+
+    let obstructions: Vec<&UVec2> = inputs
+        .iter()
+        .filter_map(|i| match i {
+            Entity::Obstruction(position) => Some(position),
+            _ => None,
+        })
+        .collect();
+
+    let mut guard_position: GuardPosition = inputs
+        .iter()
+        .filter_map(|i| match i {
+            Entity::Guard(guard_position) => Some(guard_position),
+            _ => None,
+        })
+        .next()
+        .unwrap()
+        .clone();
+
+    tracing::trace!("Obstructions: {:?}", obstructions);
+    tracing::trace!("Guard Position: {:?}", guard_position);
+
+    return Ok("".to_string());
+}
+
 #[tracing::instrument]
 fn parse_row(row: usize, input: &str) -> Vec<Entity> {
     input
