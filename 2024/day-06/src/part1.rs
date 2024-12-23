@@ -35,8 +35,7 @@ pub fn process(input: &str) -> miette::Result<String> {
     tracing::trace!("Obstructions: {:?}", obstructions);
     tracing::debug!("Guard Initial Position: {:?}", guard);
 
-    let mut tracked_positions: HashSet<UVec2> = HashSet::new();
-    tracked_positions.insert(guard.position);
+    let mut tracked_positions: HashSet<UVec2> = HashSet::from([guard.position]);
 
     while !is_exiting_bounds(&guard, &bounds) {
         let next_position = match guard.direction {
