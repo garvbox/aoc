@@ -24,33 +24,34 @@ pub fn process(input: &str) -> miette::Result<String> {
             .insert(left);
     }
 
-    let result: usize = input
+    let updates: Vec<Vec<usize>> = input
         .lines()
         .skip(rules.len())
         .filter(|l| l.contains(","))
         .map(|line| {
-            trace!("Line: {line}");
-            let page_nums: Vec<usize> = line
-                .split(",")
+            line.split(",")
                 .map(|num| num.parse::<usize>().unwrap())
-                .collect();
+                .collect()
+        })
+        .collect();
 
+    let result: usize = updates
+        .iter()
+        .map(|update| {
             let is_ordered =
-                page_nums
+                update
                     .iter()
                     .enumerate()
                     .all(|(page_index, page)| match rules.get(page) {
                         Some((lefts, rights)) => {
-                            page_nums[0..page_index].iter().all(|p| lefts.contains(p))
-                                && page_nums[page_index + 1..]
-                                    .iter()
-                                    .all(|p| rights.contains(p))
+                            update[0..page_index].iter().all(|p| lefts.contains(p))
+                                && update[page_index + 1..].iter().all(|p| rights.contains(p))
                         }
                         _ => false,
                     });
 
             if is_ordered {
-                let middle_num = page_nums[page_nums.len() / 2];
+                let middle_num = update[update.len() / 2];
                 trace!("Found result: {middle_num}");
                 middle_num
             } else {
