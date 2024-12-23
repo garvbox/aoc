@@ -8,7 +8,7 @@ test day part:
 bench-all:
     cargo bench -q > benchmarks.txt
 bench day part:
-    cargo bench --bench {{day}}-bench {{part}} >> {{day}}.bench.txt
+    cargo bench --bench {{day}}-bench {{part}} >> {{day}}/bench-{{part}}.txt
 
 
 init day:
