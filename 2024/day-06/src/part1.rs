@@ -18,10 +18,10 @@ pub fn process(input: &str) -> miette::Result<String> {
     };
 
     let mut guard: GuardLocation = GuardLocation::new(0, 0);
-    let obstructions: Vec<&UVec2> = entities
+    let obstructions: Vec<UVec2> = entities
         .iter()
         .filter_map(|i| match i {
-            Entity::Obstruction(position) => Some(position),
+            Entity::Obstruction(position) => Some(position.clone()),
             Entity::Guard(position) => {
                 guard.position = *position;
                 None
@@ -37,16 +37,18 @@ pub fn process(input: &str) -> miette::Result<String> {
 }
 
 #[tracing::instrument]
-fn exiting_bounds(guard: &GuardLocation, bounds: &UVec2) -> bool {
+fn is_exiting_bounds(guard: &GuardLocation, bounds: &UVec2) -> bool {
     tracing::trace!(
         "Position: {:?}, Min element: {:?}",
         guard.position,
         guard.position.min_element()
     );
-    (guard.position.min_element() == 0
-        && [GuardDirection::South, GuardDirection::West].contains(&guard.direction))
-        || (guard.position.x >= bounds.x - 1 && guard.direction == GuardDirection::East)
-        || (guard.position.y >= bounds.y && guard.direction == GuardDirection::North)
+    match guard.direction {
+        GuardDirection::North => guard.position.y >= bounds.y,
+        GuardDirection::East => guard.position.x >= bounds.x,
+        GuardDirection::South => guard.position.y == 0,
+        GuardDirection::West => guard.position.x == 0,
+    }
 }
 
 #[tracing::instrument]
@@ -55,7 +57,7 @@ fn parse_row(row: usize, input: &str) -> Vec<Entity> {
         .chars()
         .enumerate()
         .filter_map(|(column, ch)| {
-            let pos = UVec2::from((row as u32, column as u32));
+            let pos = UVec2::from((column as u32, row as u32));
             let res = match ch {
                 '#' => Some(Entity::Obstruction(pos)),
                 '^' => Some(Entity::Guard(pos)),
@@ -130,7 +132,7 @@ mod tests {
 ....^.....
 ";
         // Should move up 1 step and then 5 to the right then done
-        assert_eq!("6", process(input)?);
+        assert_eq!("7", process(input)?);
         Ok(())
     }
 
@@ -156,7 +158,7 @@ mod tests {
     #[test]
     fn test_parse_guard_position() -> miette::Result<()> {
         let input = "....^.....";
-        let expected: Vec<Entity> = vec![Entity::Guard(UVec2::new(0, 4))];
+        let expected: Vec<Entity> = vec![Entity::Guard(UVec2::new(4, 0))];
         assert_eq!(
             expected,
             parse_row(0, input)
@@ -175,7 +177,7 @@ mod tests {
     #[test]
     fn test_parse_guard_position_non_zero_row() -> miette::Result<()> {
         let input = "....^.....";
-        let expected: Vec<Entity> = vec![Entity::Guard(UVec2::new(7, 4))];
+        let expected: Vec<Entity> = vec![Entity::Guard(UVec2::new(4, 7))];
         assert_eq!(
             expected,
             parse_row(7, input)
@@ -195,8 +197,8 @@ mod tests {
     fn test_parse_guard_position_and_obstruction() -> miette::Result<()> {
         let input = "....^...#.";
         let expected: Vec<Entity> = vec![
-            Entity::Guard(UVec2::new(0, 4)),
-            Entity::Obstruction(UVec2::new(0, 8)),
+            Entity::Guard(UVec2::new(4, 0)),
+            Entity::Obstruction(UVec2::new(8, 0)),
         ];
         assert_eq!(
             expected,
@@ -214,12 +216,22 @@ mod tests {
     }
 
     #[test]
-    fn test_in_bounds_returns_false_when_zero_bounds_reached_and_direction_south(
+    fn test_exiting_bounds_returns_true_when_zero_bounds_reached_and_direction_south(
     ) -> miette::Result<()> {
         let bounds = UVec2::new(5, 5);
-        let mut guard = GuardLocation::new(0, 1);
+        let mut guard = GuardLocation::new(1, 0);
         guard.direction = GuardDirection::South;
-        assert!(exiting_bounds(&guard, &bounds));
+        assert!(is_exiting_bounds(&guard, &bounds));
+        Ok(())
+    }
+
+    #[test]
+    fn test_exiting_bounds_returns_false_when_zero_bounds_reached_and_direction_not_south(
+    ) -> miette::Result<()> {
+        let bounds = UVec2::new(5, 5);
+        let mut guard = GuardLocation::new(1, 0);
+        guard.direction = GuardDirection::West;
+        assert!(!is_exiting_bounds(&guard, &bounds));
         Ok(())
     }
 }
