@@ -8,13 +8,7 @@ pub fn process(input: &str) -> miette::Result<String> {
     let mut tracked_positions: HashSet<UVec2> = HashSet::from([guard.position]);
 
     while !is_exiting_bounds(&guard, &bounds) {
-        let next_position = match guard.direction {
-            GuardDirection::North => UVec2::new(guard.position.x, guard.position.y + 1),
-            GuardDirection::South => UVec2::new(guard.position.x, guard.position.y - 1),
-            GuardDirection::East => UVec2::new(guard.position.x + 1, guard.position.y),
-            GuardDirection::West => UVec2::new(guard.position.x - 1, guard.position.y),
-        };
-
+        let next_position = get_next_position(&guard);
         if obstructions.contains(&next_position) {
             // Make no move if we are to hit an obstruction, do not count positions
             guard.direction = guard.direction.pivot();
@@ -34,7 +28,7 @@ pub fn process(input: &str) -> miette::Result<String> {
     return Ok(tracked_positions.len().to_string());
 }
 
-pub fn parse_input(input: &str) -> (UVec2, GuardLocation, Vec<UVec2>) {
+pub fn parse_input(input: &str) -> (UVec2, GuardLocation, HashSet<UVec2>) {
     let entities: Vec<Entity> = input
         .lines()
         .rev() // NOTE: Input is processed row by row in reverse so that X-Y coords make sense
@@ -51,7 +45,7 @@ pub fn parse_input(input: &str) -> (UVec2, GuardLocation, Vec<UVec2>) {
     };
 
     let mut guard: GuardLocation = GuardLocation::new(0, 0);
-    let obstructions: Vec<UVec2> = entities
+    let obstructions: HashSet<UVec2> = entities
         .iter()
         .filter_map(|i| match i {
             Entity::Obstruction(position) => Some(*position),
@@ -69,7 +63,7 @@ pub fn parse_input(input: &str) -> (UVec2, GuardLocation, Vec<UVec2>) {
 }
 
 #[tracing::instrument]
-fn is_exiting_bounds(guard: &GuardLocation, bounds: &UVec2) -> bool {
+pub fn is_exiting_bounds(guard: &GuardLocation, bounds: &UVec2) -> bool {
     tracing::trace!(
         "Position: {:?}, Min element: {:?}",
         guard.position,
@@ -80,6 +74,15 @@ fn is_exiting_bounds(guard: &GuardLocation, bounds: &UVec2) -> bool {
         GuardDirection::East => guard.position.x >= bounds.x,
         GuardDirection::South => guard.position.y == 0,
         GuardDirection::West => guard.position.x == 0,
+    }
+}
+
+pub fn get_next_position(guard: &GuardLocation) -> UVec2 {
+    match guard.direction {
+        GuardDirection::North => UVec2::new(guard.position.x, guard.position.y + 1),
+        GuardDirection::South => UVec2::new(guard.position.x, guard.position.y - 1),
+        GuardDirection::East => UVec2::new(guard.position.x + 1, guard.position.y),
+        GuardDirection::West => UVec2::new(guard.position.x - 1, guard.position.y),
     }
 }
 
@@ -109,10 +112,10 @@ pub enum Entity {
     None(UVec2),
 }
 
-#[derive(Default, Clone, Debug, PartialEq, Eq)]
+#[derive(Default, Clone, Debug, PartialEq, Eq, Hash)]
 pub struct GuardLocation {
-    position: UVec2,
-    direction: GuardDirection,
+    pub position: UVec2,
+    pub direction: GuardDirection,
 }
 
 impl GuardLocation {
@@ -124,7 +127,7 @@ impl GuardLocation {
     }
 }
 
-#[derive(Default, Clone, Debug, PartialEq, Eq)]
+#[derive(Default, Clone, Debug, PartialEq, Eq, Hash)]
 pub enum GuardDirection {
     #[default]
     North,
@@ -135,7 +138,7 @@ pub enum GuardDirection {
 
 impl GuardDirection {
     #[tracing::instrument]
-    fn pivot(&self) -> Self {
+    pub fn pivot(&self) -> Self {
         use GuardDirection::*;
         match *self {
             North => East,
