@@ -4,37 +4,7 @@ use glam::UVec2;
 
 #[tracing::instrument(skip(input))]
 pub fn process(input: &str) -> miette::Result<String> {
-    let entities: Vec<Entity> = input
-        .lines()
-        .rev() // NOTE: Input is processed row by row in reverse so that X-Y coords make sense
-        .skip_while(|line| line.is_empty())
-        .enumerate()
-        .flat_map(|(row, line)| parse_row(row, line))
-        .collect();
-
-    let bounds: UVec2 = match entities.last() {
-        Some(Entity::Obstruction(pos) | Entity::Guard(pos) | Entity::None(pos)) => {
-            UVec2::new(pos.x, pos.y)
-        }
-        _ => unreachable!("Something went horribly wrong here..."),
-    };
-
-    let mut guard: GuardLocation = GuardLocation::new(0, 0);
-    let obstructions: Vec<UVec2> = entities
-        .iter()
-        .filter_map(|i| match i {
-            Entity::Obstruction(position) => Some(*position),
-            Entity::Guard(position) => {
-                guard.position = *position;
-                None
-            }
-            Entity::None(_) => None,
-        })
-        .collect();
-
-    tracing::trace!("Obstructions: {:?}", obstructions);
-    tracing::debug!("Guard Initial Position: {:?}", guard);
-
+    let (bounds, mut guard, obstructions) = parse_input(input);
     let mut tracked_positions: HashSet<UVec2> = HashSet::from([guard.position]);
 
     while !is_exiting_bounds(&guard, &bounds) {
@@ -62,6 +32,40 @@ pub fn process(input: &str) -> miette::Result<String> {
     tracing::debug!("Guard Final Position: {:?}", guard);
 
     return Ok(tracked_positions.len().to_string());
+}
+
+pub fn parse_input(input: &str) -> (UVec2, GuardLocation, Vec<UVec2>) {
+    let entities: Vec<Entity> = input
+        .lines()
+        .rev() // NOTE: Input is processed row by row in reverse so that X-Y coords make sense
+        .skip_while(|line| line.is_empty())
+        .enumerate()
+        .flat_map(|(row, line)| parse_row(row, line))
+        .collect();
+
+    let bounds: UVec2 = match entities.last() {
+        Some(Entity::Obstruction(pos) | Entity::Guard(pos) | Entity::None(pos)) => {
+            UVec2::new(pos.x, pos.y)
+        }
+        _ => unreachable!("Something went horribly wrong here..."),
+    };
+
+    let mut guard: GuardLocation = GuardLocation::new(0, 0);
+    let obstructions: Vec<UVec2> = entities
+        .iter()
+        .filter_map(|i| match i {
+            Entity::Obstruction(position) => Some(*position),
+            Entity::Guard(position) => {
+                guard.position = *position;
+                None
+            }
+            Entity::None(_) => None,
+        })
+        .collect();
+    tracing::trace!("Obstructions: {:?}", obstructions);
+    tracing::debug!("Guard Initial Position: {:?}", guard);
+
+    (bounds, guard, obstructions)
 }
 
 #[tracing::instrument]
@@ -99,14 +103,14 @@ fn parse_row(row: usize, input: &str) -> Vec<Entity> {
 }
 
 #[derive(Eq, PartialEq, Clone, Debug)]
-enum Entity {
+pub enum Entity {
     Obstruction(UVec2),
     Guard(UVec2),
     None(UVec2),
 }
 
 #[derive(Default, Clone, Debug, PartialEq, Eq)]
-struct GuardLocation {
+pub struct GuardLocation {
     position: UVec2,
     direction: GuardDirection,
 }
@@ -121,7 +125,7 @@ impl GuardLocation {
 }
 
 #[derive(Default, Clone, Debug, PartialEq, Eq)]
-enum GuardDirection {
+pub enum GuardDirection {
     #[default]
     North,
     South,
