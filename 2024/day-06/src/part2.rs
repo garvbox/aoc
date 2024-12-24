@@ -1,5 +1,6 @@
 #[tracing::instrument]
-pub fn process(_input: &str) -> miette::Result<String> {
+pub fn process(input: &str) -> miette::Result<String> {
+    let _ = input.lines();
     todo!("day_06 - part 2");
 }
 
