@@ -1,5 +1,6 @@
-#[tracing::instrument]
-pub fn process(_input: &str) -> miette::Result<String> {
+#[tracing::instrument(skip(input))]
+pub fn process(input: &str) -> miette::Result<String> {
+    let _ = input.lines();
     todo!("{{crate_name}} - part 2");
 }
 

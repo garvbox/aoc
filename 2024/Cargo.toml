@@ -5,6 +5,7 @@ members = [ "day-*" ]
 default-members = [ "day-*" ]
 
 [workspace.dependencies]
+glam = "0.29.2"
 divan = "0.1.7"
 miette = { version = "7.4", features = ["fancy"] }
 nom = "7.1.3"
