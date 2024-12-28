@@ -1,7 +1,4 @@
-use nom::{
-    bytes::complete::tag, character::complete, multi::separated_list0, sequence::separated_pair,
-    IResult,
-};
+use nom::{bytes, character, multi, sequence, IResult};
 
 #[tracing::instrument(skip(input))]
 pub fn process(input: &str) -> miette::Result<String> {
@@ -19,10 +16,10 @@ pub fn process(input: &str) -> miette::Result<String> {
 }
 
 fn parse(input: &str) -> IResult<&str, Equation> {
-    let (_remaining, pair) = separated_pair(
-        complete::u32,
-        tag(": "),
-        separated_list0(complete::space1, complete::u32),
+    let (_remaining, pair) = sequence::separated_pair(
+        character::complete::u32,
+        bytes::complete::tag(": "),
+        multi::separated_list0(character::complete::space1, character::complete::u32),
     )(input)?;
     tracing::info!("Parse Result: {:?}", pair);
     Ok((
