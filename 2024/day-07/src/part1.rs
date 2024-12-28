@@ -1,3 +1,4 @@
+use itertools::Itertools;
 use nom::{bytes, character, multi, sequence, IResult};
 
 #[tracing::instrument(skip(input))]
@@ -5,10 +6,36 @@ pub fn process(input: &str) -> miette::Result<String> {
     let result: u32 = input
         .lines()
         .filter(|line| !line.is_empty())
-        .map(|line| {
-            let (_discard, res) = parse(line).unwrap();
-            tracing::info!("Line Parse result: {:?}, from input {:?}", res, line);
-            1 // FIXME: Return something meaningful here...
+        .filter_map(|line| {
+            let (_discard, equation) = parse(line).unwrap();
+            let ops = vec![Operator::Add, Operator::Multiply];
+            let num_operators = equation.numbers.len() - 1;
+            tracing::info!(
+                "Line Parse result: {:?}, from input {:?}, num operators: {:?}",
+                equation,
+                line,
+                num_operators
+            );
+
+            let solution = (0..num_operators)
+                .map(|_| ops.clone())
+                .multi_cartesian_product()
+                .find(|operators| {
+                    tracing::debug!("Trying operator permutation: {:?}", operators);
+                    solve(&equation, operators)
+                });
+
+            if solution.is_some() {
+                tracing::info!(
+                    "Solution Found: {:?} -> Adding {:?}",
+                    solution,
+                    equation.test_value
+                );
+                Some(equation.test_value)
+            } else {
+                tracing::warn!("No solutions found for: {:?}", equation,);
+                None
+            }
         })
         .sum();
     tracing::info!("Result: {:?}", result);
@@ -21,7 +48,7 @@ fn parse(input: &str) -> IResult<&str, Equation> {
         bytes::complete::tag(": "),
         multi::separated_list0(character::complete::space1, character::complete::u32),
     )(input)?;
-    tracing::info!("Parse Result: {:?}", pair);
+    tracing::trace!("Parse Result: {:?}", pair);
     Ok((
         input,
         Equation {
@@ -31,10 +58,40 @@ fn parse(input: &str) -> IResult<&str, Equation> {
     ))
 }
 
+#[tracing::instrument]
+fn solve(equation: &Equation, operators: &Vec<Operator>) -> bool {
+    let mut collector = equation.numbers[0];
+    for (index, number) in equation.numbers[1..].iter().enumerate() {
+        let operator = operators.get(index).unwrap();
+        tracing::trace!("Collector: {:?} -> {:?} {:?}", collector, operator, number);
+        match operator {
+            Operator::Add => collector += number,
+            Operator::Multiply => collector *= number,
+        }
+        if collector > equation.test_value {
+            tracing::trace!("Collector Exceeded test value - breaking: {:?}", collector);
+            break;
+        }
+    }
+    tracing::trace!(
+        "Result -> Collector {:?}, operators {:?}, test value: {:?}",
+        collector,
+        operators,
+        equation.test_value
+    );
+    collector == equation.test_value
+}
+
 #[derive(Default, Clone, Debug, PartialEq, Eq, Hash)]
 struct Equation {
     test_value: u32,
     numbers: Vec<u32>,
+}
+
+#[derive(Clone, Debug)]
+enum Operator {
+    Add,
+    Multiply,
 }
 
 #[cfg(test)]
