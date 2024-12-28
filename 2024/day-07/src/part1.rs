@@ -42,7 +42,7 @@ pub fn process(input: &str) -> miette::Result<String> {
     Ok(result.to_string())
 }
 
-fn parse(input: &str) -> IResult<&str, Equation> {
+pub(crate) fn parse(input: &str) -> IResult<&str, Equation> {
     let (_remaining, pair) = sequence::separated_pair(
         character::complete::u64,
         bytes::complete::tag(": "),
@@ -59,7 +59,7 @@ fn parse(input: &str) -> IResult<&str, Equation> {
 }
 
 #[tracing::instrument]
-fn solve(equation: &Equation, operators: &Vec<Operator>) -> bool {
+pub(crate) fn solve(equation: &Equation, operators: &Vec<Operator>) -> bool {
     let mut collector = equation.numbers[0];
     for (index, number) in equation.numbers[1..].iter().enumerate() {
         let operator = operators.get(index).unwrap();
@@ -67,6 +67,11 @@ fn solve(equation: &Equation, operators: &Vec<Operator>) -> bool {
         match operator {
             Operator::Add => collector += number,
             Operator::Multiply => collector *= number,
+            Operator::Concat => {
+                collector = (collector.to_string() + number.to_string().as_str())
+                    .parse()
+                    .unwrap()
+            }
         }
         if collector > equation.test_value {
             tracing::trace!("Collector Exceeded test value - breaking: {:?}", collector);
@@ -83,15 +88,16 @@ fn solve(equation: &Equation, operators: &Vec<Operator>) -> bool {
 }
 
 #[derive(Default, Clone, Debug, PartialEq, Eq, Hash)]
-struct Equation {
-    test_value: u64,
-    numbers: Vec<u64>,
+pub(crate) struct Equation {
+    pub test_value: u64,
+    pub numbers: Vec<u64>,
 }
 
-#[derive(Clone, Debug)]
-enum Operator {
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub(crate) enum Operator {
     Add,
     Multiply,
+    Concat,
 }
 
 #[cfg(test)]
