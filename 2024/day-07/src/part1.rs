@@ -3,7 +3,7 @@ use nom::{bytes, character, multi, sequence, IResult};
 
 #[tracing::instrument(skip(input))]
 pub fn process(input: &str) -> miette::Result<String> {
-    let result: u32 = input
+    let result: u64 = input
         .lines()
         .filter(|line| !line.is_empty())
         .filter_map(|line| {
@@ -44,9 +44,9 @@ pub fn process(input: &str) -> miette::Result<String> {
 
 fn parse(input: &str) -> IResult<&str, Equation> {
     let (_remaining, pair) = sequence::separated_pair(
-        character::complete::u32,
+        character::complete::u64,
         bytes::complete::tag(": "),
-        multi::separated_list0(character::complete::space1, character::complete::u32),
+        multi::separated_list0(character::complete::space1, character::complete::u64),
     )(input)?;
     tracing::trace!("Parse Result: {:?}", pair);
     Ok((
@@ -84,8 +84,8 @@ fn solve(equation: &Equation, operators: &Vec<Operator>) -> bool {
 
 #[derive(Default, Clone, Debug, PartialEq, Eq, Hash)]
 struct Equation {
-    test_value: u32,
-    numbers: Vec<u32>,
+    test_value: u64,
+    numbers: Vec<u64>,
 }
 
 #[derive(Clone, Debug)]
