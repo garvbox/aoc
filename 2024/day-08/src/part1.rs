@@ -24,9 +24,11 @@ pub fn process(input: &str) -> miette::Result<String> {
         .skip_while(|line| line.is_empty())
         .next()
         .unwrap()
-        .len() as i32;
-    let max_y = input.lines().skip_while(|line| line.is_empty()).count() as i32;
+        .len() as i32
+        - 1;
+    let max_y = input.lines().skip_while(|line| line.is_empty()).count() as i32 - 1;
     let bounds = IVec2::new(max_x, max_y);
+    tracing::debug!("Detected Bounds: {:?}", &bounds);
 
     // TODO: Collect all possible pairs of antennae (iterools.combinations?) and work out antinodes
     // for each in a HashSet
