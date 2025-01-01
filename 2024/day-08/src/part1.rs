@@ -37,16 +37,16 @@ pub fn process(input: &str) -> miette::Result<String> {
     for (character, antennae) in char_map.iter() {
         for combo in antennae.iter().combinations(2) {
             tracing::trace!("Antenna combination: {:?} for {:?}", &combo, &character);
-            let antinode_a = get_antinode(combo[0], combo[1]);
-            if in_bounds(&antinode_a, &bounds) {
-                tracing::trace!("Antinode Found: {:?}, {:?}", &combo[0], &combo[1]);
-                antinodes.insert(antinode_a);
-            }
-
-            let antinode_b = get_antinode(combo[1], combo[0]);
-            if in_bounds(&antinode_b, &bounds) {
-                tracing::trace!("Antinode Found: {:?}, {:?}", &combo[1], &combo[0]);
-                antinodes.insert(antinode_b);
+            for antinode in [
+                get_antinode(combo[0], combo[1]),
+                get_antinode(combo[1], combo[0]),
+            ] {
+                if in_bounds(&antinode, &bounds) {
+                    tracing::debug!("Antinode Found: {:?}", antinode);
+                    antinodes.insert(antinode);
+                } else {
+                    tracing::trace!("Antinode Out of Bounds: {:?}", antinode);
+                }
             }
         }
     }
