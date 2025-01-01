@@ -1,5 +1,5 @@
 [package]
-name = "{{project-name}}"
+name = "day-08"
 version = "0.1.0"
 edition = "2021"
 
@@ -21,6 +21,6 @@ rstest_reuse.workspace = true
 test-log.workspace = true
 
 [[bench]]
-name = "{{project-name}}-bench"
+name = "day-08-bench"
 path = "benches/benchmark.rs"
 harness = false
