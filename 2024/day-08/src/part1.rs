@@ -24,10 +24,7 @@ pub fn process(input: &str) -> miette::Result<String> {
     let bounds = IVec2::new(max_x, max_y);
     tracing::debug!("Detected Bounds: {:?}", &bounds);
 
-    // TODO: Collect all possible pairs of antennae (iterools.combinations?) and work out antinodes
-    // for each in a HashSet
     let mut antinodes: HashSet<IVec2> = HashSet::new();
-
     for (character, antennae) in char_map.iter() {
         for combo in antennae.iter().combinations(2) {
             tracing::trace!("Antenna combination: {:?} for {:?}", &combo, &character);
@@ -49,7 +46,7 @@ pub fn process(input: &str) -> miette::Result<String> {
     Ok(antinodes.len().to_string())
 }
 
-fn in_bounds(position: &IVec2, bound: &IVec2) -> bool {
+pub(crate) fn in_bounds(position: &IVec2, bound: &IVec2) -> bool {
     position.cmple(*bound).all() && position.cmpge(IVec2::new(0, 0)).all()
 }
 
@@ -58,13 +55,13 @@ fn get_antinode(lhs: &IVec2, rhs: &IVec2) -> IVec2 {
 }
 
 #[derive(Eq, PartialEq, Clone, Debug)]
-struct Antenna {
-    character: char,
-    position: IVec2,
+pub(crate) struct Antenna {
+    pub character: char,
+    pub position: IVec2,
 }
 
 #[tracing::instrument]
-fn parse_row(row: usize, input: &str) -> Vec<Antenna> {
+pub(crate) fn parse_row(row: usize, input: &str) -> Vec<Antenna> {
     input
         .chars()
         .enumerate()
