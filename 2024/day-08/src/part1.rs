@@ -19,13 +19,7 @@ pub fn process(input: &str) -> miette::Result<String> {
         }
     }
 
-    let max_x = input
-        .lines()
-        .skip_while(|line| line.is_empty())
-        .next()
-        .unwrap()
-        .len() as i32
-        - 1;
+    let max_x = input.lines().find(|line| !line.is_empty()).unwrap().len() as i32 - 1;
     let max_y = input.lines().skip_while(|line| line.is_empty()).count() as i32 - 1;
     let bounds = IVec2::new(max_x, max_y);
     tracing::debug!("Detected Bounds: {:?}", &bounds);
