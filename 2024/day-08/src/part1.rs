@@ -1,6 +1,6 @@
-use std::collections::HashMap;
-
 use glam::IVec2;
+use itertools::Itertools;
+use std::collections::{HashMap, HashSet};
 
 #[tracing::instrument(skip(input))]
 pub fn process(input: &str) -> miette::Result<String> {
@@ -30,12 +30,35 @@ pub fn process(input: &str) -> miette::Result<String> {
 
     // TODO: Collect all possible pairs of antennae (iterools.combinations?) and work out antinodes
     // for each in a HashSet
+    let mut antinodes: HashSet<IVec2> = HashSet::new();
 
-    Ok("".to_owned())
+    for (character, antennae) in char_map.iter() {
+        for combo in antennae.iter().combinations(2) {
+            tracing::trace!("Antenna combination: {:?} for {:?}", &combo, &character);
+            let antinode_a = get_antinode(combo[0], combo[1]);
+            if in_bounds(&antinode_a, &bounds) {
+                tracing::trace!("Antinode Found: {:?}, {:?}", &combo[0], &combo[1]);
+                antinodes.insert(antinode_a);
+            }
+
+            let antinode_b = get_antinode(combo[1], combo[0]);
+            if in_bounds(&antinode_b, &bounds) {
+                tracing::trace!("Antinode Found: {:?}, {:?}", &combo[1], &combo[0]);
+                antinodes.insert(antinode_b);
+            }
+        }
+    }
+
+    tracing::info!("Antinodes Found: {:?}", &antinodes);
+    Ok(antinodes.len().to_string())
 }
 
 fn in_bounds(position: &IVec2, bound: &IVec2) -> bool {
     position.cmple(*bound).all() && position.cmpge(IVec2::new(0, 0)).all()
+}
+
+fn get_antinode(lhs: &IVec2, rhs: &IVec2) -> IVec2 {
+    IVec2::new(rhs.x + (rhs.x - lhs.x), rhs.y + (rhs.y - lhs.y))
 }
 
 #[derive(Eq, PartialEq, Clone, Debug)]
