@@ -51,7 +51,7 @@ fn parse_row(row: usize, input: &str) -> Vec<Antenna> {
         .enumerate()
         .filter_map(|(column, ch)| {
             let pos = IVec2::from((column as i32, row as i32));
-            let res = match ch {
+            match ch {
                 '.' => None,
                 _other => {
                     tracing::trace!("Found: {:?} at {:?}", &_other, &pos);
@@ -60,8 +60,7 @@ fn parse_row(row: usize, input: &str) -> Vec<Antenna> {
                         position: pos,
                     })
                 }
-            };
-            res
+            }
         })
         .collect()
 }
