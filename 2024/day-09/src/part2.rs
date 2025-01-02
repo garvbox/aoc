@@ -46,7 +46,6 @@ pub fn process(input: &str) -> miette::Result<String> {
 
     for file_id in file_ids {
         files = defrag_move_file(file_id, files);
-        print_file_map(&files);
     }
     print_file_map(&files);
 
