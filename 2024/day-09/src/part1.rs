@@ -11,8 +11,8 @@ mod tests {
 
     #[test]
     fn test_process() -> miette::Result<()> {
-        let input = "";
-        assert_eq!("", process(input)?);
+        let input = "2333133121414131402";
+        assert_eq!("1928", process(input)?);
         Ok(())
     }
 }
