@@ -3,8 +3,10 @@ use miette::{miette, Result};
 
 #[tracing::instrument(skip(input))]
 pub fn process(input: &str) -> Result<String> {
+    let input_line = input.chars().filter(|ch| *ch != '\n');
     let mut files: Vec<Option<u32>> = vec![];
-    for (file_index, mut chunk) in (&input.chars().chunks(2)).into_iter().enumerate() {
+
+    for (file_index, mut chunk) in (&input_line.chunks(2)).into_iter().enumerate() {
         let file_size: u32 = chunk
             .next()
             .ok_or(miette!("Invalid Input chunk"))?
