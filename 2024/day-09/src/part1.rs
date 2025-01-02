@@ -4,16 +4,22 @@ use miette::{miette, Result};
 #[tracing::instrument(skip(input))]
 pub fn process(input: &str) -> Result<String> {
     let mut files: Vec<Option<u32>> = vec![];
-
-    for (file_index, (file_size, free_space)) in input.chars().tuple_windows().enumerate() {
-        let file_size: u32 = file_size
+    for (file_index, mut chunk) in (&input.chars().chunks(2)).into_iter().enumerate() {
+        let file_size: u32 = chunk
+            .next()
+            .ok_or(miette!("Invalid Input chunk"))?
             .to_digit(10)
-            .ok_or(miette!("Invalid file size, got {:?}", file_size))?;
-        let free_space: u32 = free_space
-            .to_digit(10)
-            .ok_or(miette!("Invalid free space, got {:?}", file_size))?;
+            .ok_or(miette!("Invalid file size"))?;
 
-        tracing::trace!("File: {file_size}, Space: {free_space}");
+        let free_space: u32 = chunk
+            .next()
+            .unwrap_or('0') // Last file in a sequence may or may not have free space after
+            .to_digit(10)
+            .ok_or(miette!("Invalid free space"))?;
+
+        tracing::trace!(
+            "File index: {file_index}, File size: {file_size}, Free space: {free_space}"
+        );
         files.extend([Some(file_index as u32)].repeat(file_size as usize));
         files.extend([None].repeat(free_space as usize));
     }
@@ -22,11 +28,11 @@ pub fn process(input: &str) -> Result<String> {
     let disk_layout: String = files
         .iter()
         .map(|el| match el {
-            Some(item) => "|".to_owned() + &item.to_string(),
-            None => "|.".to_string(),
+            Some(file) => file.to_string(),
+            None => ".".to_string(),
         })
         .collect();
-    tracing::info!("Disk Map:\n{}", disk_layout);
+    tracing::info!("Original Disk Map:\n{}", disk_layout);
     Ok("".to_string())
 }
 
