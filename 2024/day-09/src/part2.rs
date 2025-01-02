@@ -35,13 +35,15 @@ pub fn process(input: &str) -> miette::Result<String> {
         });
         file_position += free_space as usize;
     }
+    print_file_map(files);
+}
 
-    // Construct formatted output for printing
-    let disk_layout: String = files
+fn print_file_map(files: Vec<File>) {
+    let disk_map: String = files
         .iter()
         .map(|file| {
             let char = match file.id {
-                Some(id) => id.to_string(),
+                Some(index) => index.to_string(),
                 None => ".".to_string(),
             };
             char.repeat(file.size as usize)
@@ -50,6 +52,7 @@ pub fn process(input: &str) -> miette::Result<String> {
     tracing::info!("Original Disk Map:\n{}", disk_layout);
 
     Ok("".to_string())
+    println!("Disk Map:\n{}", disk_map);
 }
 
 #[derive(Eq, PartialEq, Clone, Debug)]
