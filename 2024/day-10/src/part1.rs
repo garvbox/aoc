@@ -111,4 +111,20 @@ mod tests {
         assert_eq!("4", process(input)?);
         Ok(())
     }
+
+    #[test]
+    fn test_process_multi_trailhead() -> miette::Result<()> {
+        let input = "
+89010123
+78121874
+87430965
+96549874
+45678903
+32019012
+01329801
+10456732
+";
+        assert_eq!("36", process(input)?);
+        Ok(())
+    }
 }
