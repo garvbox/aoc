@@ -1,5 +1,5 @@
 use glam::IVec2;
-use std::collections::{HashMap, VecDeque};
+use std::collections::{HashMap, HashSet, VecDeque};
 
 const DIRECTIONS: [IVec2; 4] = [IVec2::X, IVec2::NEG_X, IVec2::Y, IVec2::NEG_Y];
 
@@ -38,7 +38,10 @@ pub fn process(input: &str) -> miette::Result<String> {
 
     let mut score: u32 = 0;
     for start_position in trailheads.iter() {
+        tracing::debug!("Starting trace of trail: {:?}", start_position);
         let mut queue = VecDeque::<IVec2>::new();
+        let mut trail_ends = HashSet::<IVec2>::new();
+
         queue.push_back(**start_position);
 
         while let Some(position) = queue.pop_front() {
@@ -51,8 +54,18 @@ pub fn process(input: &str) -> miette::Result<String> {
                     Some(height) => height,
                     None => continue,
                 };
-                if *next_height == 9 {
-                    score += 1;
+                if *height == 8 && *next_height == 9 {
+                    if trail_ends.contains(&next_position) {
+                        tracing::trace!(
+                            "Already seen trail end: {:?} -> {:?}",
+                            position,
+                            next_position
+                        );
+                    } else {
+                        tracing::trace!("Found Trail end: {:?} -> {:?}", position, next_position);
+                        trail_ends.insert(next_position);
+                        score += 1;
+                    }
                 } else if *next_height == height + 1 {
                     tracing::trace!("Tracking path: {:?} -> {:?}", position, next_position);
                     queue.push_front(next_position);
@@ -81,6 +94,21 @@ mod tests {
 9.....9
 ";
         assert_eq!("2", process(input)?);
+        Ok(())
+    }
+
+    #[test]
+    fn test_process_single_trail_four_path() -> miette::Result<()> {
+        let input = "
+..90..9
+...1.98
+...2..7
+6543456
+765.987
+876....
+987....
+";
+        assert_eq!("4", process(input)?);
         Ok(())
     }
 }
