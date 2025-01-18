@@ -37,4 +37,33 @@ mod tests {
         );
         Ok(())
     }
+
+    #[test]
+    fn test_six_blink_example() -> miette::Result<()> {
+        let input = "125 17"
+            .split(" ")
+            .map(|s| s.to_string())
+            .collect::<Vec<String>>();
+
+        let first = blink(input);
+        assert_eq!("253000 1 7".split(" ").collect::<Vec<_>>(), first);
+
+        let second = blink(first);
+        assert_eq!("253 0 2024 14168".split(" ").collect::<Vec<_>>(), second);
+
+        let mut last = second.clone();
+        for _ in 0..4 {
+            // Blink called twice, we want to get to 6
+            last = blink(last);
+        }
+        assert_eq!(
+            "2097446912 14168 4048 2 0 2 4 40 48 2024 40 48 80 96 2 8 6 7 6 0 3 2"
+                .split(" ")
+                .collect::<Vec<_>>(),
+            last
+        );
+        assert!(last.len() == 22);
+
+        Ok(())
+    }
 }
