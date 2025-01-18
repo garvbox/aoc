@@ -1,7 +1,15 @@
+use std::collections::HashMap;
+
 #[tracing::instrument(skip(input))]
-pub fn process(input: &str) -> miette::Result<String> {
-    let _ = input.lines();
-    todo!("day_11 - part 2");
+pub fn process(input: &str, blinks: usize) -> miette::Result<String> {
+    let mut stones: HashMap<u64, usize> = input
+        .split_whitespace()
+        .map(|stone| (stone.parse().unwrap(), 1 as usize))
+        .collect();
+
+    for _ in 0..blinks {}
+
+    Ok(stones.values().sum().to_string())
 }
 
 #[cfg(test)]
@@ -11,8 +19,7 @@ mod tests {
 
     #[test]
     fn test_process() -> miette::Result<()> {
-        let input = "";
-        assert_eq!("", process(input)?);
+        assert_eq!("55312".to_string(), process("125 17", 6).unwrap());
         Ok(())
     }
 }
