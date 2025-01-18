@@ -1,7 +1,12 @@
 #[tracing::instrument(skip(input))]
 pub fn process(input: &str) -> miette::Result<String> {
-    let _ = input.lines();
-    todo!("day_11 - part 1");
+    let mut stones: Vec<String> = input.split_whitespace().map(|s| s.to_string()).collect();
+
+    for _ in 0..25 {
+        stones = blink(stones);
+    }
+
+    Ok(stones.len().to_string())
 }
 
 fn blink(stones: Vec<String>) -> Vec<String> {
@@ -24,6 +29,12 @@ fn blink(stones: Vec<String>) -> Vec<String> {
 mod tests {
     use super::*;
     use test_log::test;
+
+    #[test]
+    fn test_process() -> miette::Result<()> {
+        assert_eq!("55312".to_string(), process("125 17").unwrap());
+        Ok(())
+    }
 
     #[test]
     fn test_one_blink() -> miette::Result<()> {
