@@ -8,7 +8,6 @@ pub fn process(input: &str) -> miette::Result<String> {
             tracing::debug!("Line: {:?}", line);
             let nums: Vec<isize> = line
                 .split_whitespace()
-                .into_iter()
                 .map(|n| n.parse().unwrap())
                 .collect();
 

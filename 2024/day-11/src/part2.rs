@@ -4,7 +4,7 @@ use std::collections::HashMap;
 pub fn process(input: &str, count: usize) -> miette::Result<String> {
     let mut stones: HashMap<u64, usize> = input
         .split_whitespace()
-        .map(|stone| (stone.parse().unwrap(), 1 as usize))
+        .map(|stone| (stone.parse().unwrap(), 1))
         .collect();
 
     for _ in 0..count {

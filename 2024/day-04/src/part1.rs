@@ -1,4 +1,4 @@
-use std::{collections::HashMap, usize};
+use std::collections::HashMap;
 
 use tracing::trace;
 
@@ -23,10 +23,7 @@ pub fn process(input: &str) -> miette::Result<String> {
             .enumerate()
             .flat_map(|(row_index, line)| {
                 line.chars().enumerate().map(move |(column_index, letter)| {
-                    (
-                        (column_index.clone() as i32, row_index.clone() as i32),
-                        letter.clone(),
-                    )
+                    ((column_index as i32, row_index as i32), letter)
                 })
             })
             .collect::<Vec<(Point, char)>>(),
