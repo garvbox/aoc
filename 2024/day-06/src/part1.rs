@@ -192,12 +192,7 @@ mod tests {
             expected,
             parse_row(0, input)
                 .into_iter()
-                .filter(|entity| {
-                    match entity {
-                        Entity::None(_) => false,
-                        _ => true,
-                    }
-                })
+                .filter(|entity| { !matches!(entity, Entity::None(_)) })
                 .collect::<Vec<Entity>>()
         );
         Ok(())
@@ -211,12 +206,7 @@ mod tests {
             expected,
             parse_row(0, input)
                 .into_iter()
-                .filter(|entity| {
-                    match entity {
-                        Entity::None(_) => false,
-                        _ => true,
-                    }
-                })
+                .filter(|entity| { !matches!(entity, Entity::None(_)) })
                 .collect::<Vec<Entity>>()
         );
         Ok(())
@@ -230,12 +220,7 @@ mod tests {
             expected,
             parse_row(7, input)
                 .into_iter()
-                .filter(|entity| {
-                    match entity {
-                        Entity::None(_) => false,
-                        _ => true,
-                    }
-                })
+                .filter(|entity| { !matches!(entity, Entity::None(_)) })
                 .collect::<Vec<Entity>>()
         );
         Ok(())
@@ -252,12 +237,7 @@ mod tests {
             expected,
             parse_row(0, input)
                 .into_iter()
-                .filter(|entity| {
-                    match entity {
-                        Entity::None(_) => false,
-                        _ => true,
-                    }
-                })
+                .filter(|entity| { !matches!(entity, Entity::None(_)) })
                 .collect::<Vec<Entity>>()
         );
         Ok(())
