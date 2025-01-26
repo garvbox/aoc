@@ -8,14 +8,12 @@ pub fn main() {
     println!("Part 2 Result {}", result_part2)
 }
 
-fn part01(input: &String) -> String {
+fn part01(input: &str) -> String {
     input
         .lines()
         .map(|line| {
             let mut digits = line.chars().filter_map(|character| character.to_digit(10));
-            let first = digits
-                .next()
-                .expect(format!("Could not find any digit in line {}", line).as_str());
+            let first = digits.next().expect("Could not find any digit in line");
             let last = match digits.last() {
                 Some(v) => v,
                 None => first,
@@ -26,7 +24,7 @@ fn part01(input: &String) -> String {
         .to_string()
 }
 
-fn part02(_input: &String) -> String {
+fn part02(_input: &str) -> String {
     281.to_string()
 }
 
