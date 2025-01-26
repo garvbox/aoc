@@ -7,7 +7,7 @@ fn main() -> miette::Result<()> {
 
     let file = std::fs::read_to_string("day-11/input.txt")
         .map_err(|e| miette::miette!("Read input file: {e}"))?;
-    let result = process(file.as_str()).context("process part 2")?;
+    let result = process(file.as_str(), 75).context("process part 2")?;
 
     println!("{}", result);
     Ok(())
