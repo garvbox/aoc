@@ -33,5 +33,5 @@ jobs:
         run: cargo fmt -- --check
       - name: Clippy
         id: cargo-clippy
-        run: cargo clippy --all --tests --all-features --no-deps
+        run: cargo clippy --all --tests --all-features --no-deps -- -Dwarnings
 
