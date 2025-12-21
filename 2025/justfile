@@ -1,0 +1,20 @@
+# Use `just work day-01 part1` to work on the specific binary for a specific day's problems
+work day part:
+    bacon --watch {{day}} nextest -- -p {{day}} {{part}}
+lint day:
+    cargo clippy -p {{day}}
+test day part:
+    cargo nextest run -p {{day}} {{part}}
+bench-all:
+    cargo bench -q > benchmarks.txt
+bench day part:
+    cargo bench --bench {{day}}-bench {{part}} >> {{day}}/bench-{{part}}.txt
+
+
+init day:
+    cargo generate --path ./daily-template --name {{day}}
+download day:
+    aoc download -d {{replace(day, 'day-', '')}} --input-only --input-file {{day}}/input.txt
+
+create day: (init day) (download day)
+
